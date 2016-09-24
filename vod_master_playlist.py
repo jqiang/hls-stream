@@ -39,3 +39,15 @@ class VodMasterPlaylist():
                         variant_location)
                 variants.append(variant)
         return variants
+
+    def serialize(self):
+        playlist = "#EXTM3U\n"
+        index = 0
+        for variant in self.variants:
+            codecs = ", ".join(sorted(variant.codecs))
+            playlist += "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH={},"\
+                        "RESOLUTION={},CODECS=\"{}\"\n".format(variant.bandwidth,
+                                variant.resolution, codecs)
+            playlist += "index-{}.m3u8\n".format(index)
+            index += 1
+        return playlist

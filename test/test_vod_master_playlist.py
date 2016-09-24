@@ -16,5 +16,11 @@ class VodMasterPlaylistTestCase(unittest.TestCase):
         self.assertEqual(variant.codecs, {"avc1.42001f", "mp4a.40.2"})
         self.assertEqual(len(variant.segments), 11)
 
+    def test_serialize(self):
+        expected = "#EXTM3U\n#EXT-X-STREAM-INF:PROGRAM-ID=1," \
+        "BANDWIDTH=2064000,RESOLUTION=568x320,CODECS=\"avc1.42001f, mp4a.40.2\"\n" \
+        "index-0.m3u8\n"
+        self.assertEqual(self.playlist.serialize(), expected)
+
 if __name__ == '__main__':
     unittest.main()
