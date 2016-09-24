@@ -49,3 +49,20 @@ class VodVariantPlaylist():
         last_segment = segments[segment_index-1]
         last_segment.update_discontinuity(True)
         return (target_duration, segments)
+
+    def serialize(self, is_vod=True, hls_version=3):
+        playlist = "#EXTM3U\n"
+        if is_vod:
+            playlist += "#EXT-X-PLAYLIST-TYPE:VOD\n"
+        playlist += "#EXT-X-TARGETDURATION:{}\n".format(self.target_duration)
+        playlist += "#EXT-X-VERSION:{}\n".format(hls_version)
+        for s in self.segments:
+            playlist += "#EXTINF:{},\n".format(s.duration)
+            playlist += "{}\n".format(s.location)
+            if s.discontinuity:
+                playlist += "#EXT-X-DISCONTINUITY\n"
+        # If VOD, put #EXT-X-ENDLIST instead of discontinuity tag
+        if is_vod:
+            playlist = playlist[:playlist.rfind("#EXT-X-DISCONTINUITY\n")]
+            playlist += "#EXT-X-ENDLIST\n"
+        return playlist

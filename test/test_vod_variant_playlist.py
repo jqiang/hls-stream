@@ -46,5 +46,11 @@ class VodVariantPlaylistTestCase(unittest.TestCase):
         self.assertEqual(segment.duration, 4)
         self.assertEqual(segment.discontinuity, True)
 
+    def test_serialize(self):
+        self.maxDiff = None
+        with open("test/expected/test_variant_expected", "r") as f:
+            expected = f.read()
+            self.assertEqual(self.playlist.serialize(True, 3), expected)
+
 if __name__ == '__main__':
     unittest.main()
