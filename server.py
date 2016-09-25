@@ -66,9 +66,12 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.send_error(500, e)
         return f
 
-def generate_master_playlist(source_playlist):
+def generate_master_playlist(source_playlists):
     global master_playlist
-    master_playlist = mp.VodMasterPlaylist(source_playlist)
+    master_playlist = mp.VodMasterPlaylist(source_playlists[0])
+    for p in source_playlists[1:]:
+        new_playlist = mp.VodMasterPlaylist(p)
+        master_playlist.concatenate(new_playlist)
     f = open("playlist.m3u8", 'w')
     f.write(master_playlist.serialize())
     f.close()
@@ -90,17 +93,16 @@ def get_ip_address():
 def main():
     # Parse the arguments
     parser = argparse.ArgumentParser()
-    # TODO: Currently haven't implemented concatenation, only first one will be
-    # served!
     parser.add_argument('playlists', metavar='playlists', type=str, nargs='+',
             help='List of source playlists to serve from')
     parser.add_argument('-p', '--port', nargs='?', type=int, default=8000,
             help="Port to serve from, default 8000")
     args = parser.parse_args()
-    source_playlist = args.playlists[0]
+    source_playlists = args.playlists
     port = args.port
-    generate_master_playlist(source_playlist)
-    generate_variant_playlist(0)
+    # Prepare master playlist
+    generate_master_playlist(source_playlists)
+    # Start webserver
     Handler = CustomHTTPRequestHandler
     httpd = socketserver.TCPServer(("", port), Handler)
     print("Watch stream at: http://{}:{}/playlist.m3u8".format(get_ip_address(), port))
