@@ -66,3 +66,26 @@ class VodVariantPlaylist():
             playlist = playlist[:playlist.rfind("#EXT-X-DISCONTINUITY\n")]
             playlist += "#EXT-X-ENDLIST\n"
         return playlist
+
+
+    """
+    Concatenate a new variant playlist after the current one
+    The new playlist needs to have the exact same parameters (bandwidth,
+    resolution, codecs, target segment length.
+    """
+    def concatenate(self, new_playlist):
+        if new_playlist.bandwidth != self.bandwidth or \
+           new_playlist.resolution != self.resolution or \
+           new_playlist.codecs != self.codecs or \
+           new_playlist.target_duration != self.target_duration:
+               raise RuntimeError("Cannot append variant playlist"\
+                       "different parameters detected")
+        index = len(self.segments)
+        start_time = self.segments[index - 1].start_time + \
+                     self.segments[index - 1].duration
+        for s in new_playlist.segments:
+            s.id = index
+            s.start_time = start_time
+            self.segments.append(s)
+            index += 1
+            start_time += s.duration
