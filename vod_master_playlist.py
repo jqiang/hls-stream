@@ -38,7 +38,7 @@ class VodMasterPlaylist():
                 variant = vp.VodVariantPlaylist(bandwidth, resolution, codecs,
                         variant_location)
                 variants.append(variant)
-        return variants
+        return sorted(variants, key=lambda x:x.resolution)
 
     def serialize(self):
         playlist = "#EXTM3U\n"
@@ -51,3 +51,9 @@ class VodMasterPlaylist():
             playlist += "index-{}.m3u8\n".format(index)
             index += 1
         return playlist
+
+    def concatenate(self, new_playlist):
+        if len(new_playlist.variants) != len(self.variants):
+            raise RuntimeError("Master playlist doesn't contain same amount of variants")
+        for i in range(0, len(self.variants)):
+            self.variants[i].concatenate(new_playlist.variants[i])
