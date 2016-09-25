@@ -46,10 +46,16 @@ class VodVariantPlaylistTestCase(unittest.TestCase):
         self.assertEqual(segment.duration, 4)
         self.assertEqual(segment.discontinuity, True)
 
-    def test_serialize(self):
+    def test_serialize_vod(self):
         with open("test/expected/test_variant_expected", "r") as f:
             expected = f.read()
             self.assertEqual(self.playlist.serialize(True, 3), expected)
+
+    def test_serialize_live(self):
+        self.maxDiff = None
+        with open("test/expected/test_variant_live_expected", "r") as f:
+            expected = f.read()
+            self.assertEqual(self.playlist.serialize(False, 3,31), expected)
 
     def test_concatenate(self):
         new_playlist = playlist.VodVariantPlaylist(206400,

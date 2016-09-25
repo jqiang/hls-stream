@@ -1,14 +1,7 @@
 #EXTM3U
-#EXT-X-PLAYLIST-TYPE:VOD
 #EXT-X-TARGETDURATION:9
 #EXT-X-VERSION:3
-#EXT-X-MEDIA-SEQUENCE:0
-#EXTINF:9,
-testdata/m1-1-1000000/frag-1.ts
-#EXTINF:9,
-testdata/m1-1-1000000/frag-2.ts
-#EXTINF:9,
-testdata/m1-1-1000000/frag-3.ts
+#EXT-X-MEDIA-SEQUENCE:3
 #EXTINF:9,
 testdata/m1-1-1000000/frag-4.ts
 #EXTINF:9,
@@ -25,4 +18,10 @@ testdata/m1-1-1000000/frag-9.ts
 testdata/m1-1-1000000/frag-10.ts
 #EXTINF:4,
 testdata/m1-1-1000000/frag-11.ts
-#EXT-X-ENDLIST
+#EXT-X-DISCONTINUITY
+#EXTINF:9,
+testdata/m1-1-1000000/frag-1.ts
+#EXTINF:9,
+testdata/m1-1-1000000/frag-2.ts
+#EXTINF:9,
+testdata/m1-1-1000000/frag-3.ts

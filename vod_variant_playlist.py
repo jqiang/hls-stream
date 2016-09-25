@@ -50,13 +50,35 @@ class VodVariantPlaylist():
         last_segment.update_discontinuity(True)
         return (target_duration, segments)
 
-    def serialize(self, is_vod=True, hls_version=3):
+    """
+    Serialize variant manifest
+    is_vod: variant type VOD or LIVE
+    hls_version: hls version number
+    time_offset: only applies for LIVE serving, when simulating live serving by looping current
+                 data, we are serving the content in a sliding window fashion, time_offset is
+                 the time since the server starts
+    """
+    def serialize(self, is_vod=True, hls_version=3, time_offset=0):
         playlist = "#EXTM3U\n"
         if is_vod:
             playlist += "#EXT-X-PLAYLIST-TYPE:VOD\n"
         playlist += "#EXT-X-TARGETDURATION:{}\n".format(self.target_duration)
         playlist += "#EXT-X-VERSION:{}\n".format(hls_version)
-        for s in self.segments:
+        media_sequence = 0
+        start_index = 0
+        if not is_vod:
+            last_segment = self.segments[len(self.segments) - 1]
+            total_duration = last_segment.start_time + last_segment.duration
+            media_sequence += int(time_offset / total_duration) * len(self.segments)
+            time_offset %= total_duration #Offset in the track that we should start serving from
+            for i in range(0, len(self.segments)):
+                if time_offset < (self.segments[i].start_time + self.segments[i].duration):
+                    start_index = i
+                    break
+            media_sequence += start_index
+        playlist += "#EXT-X-MEDIA-SEQUENCE:{}\n".format(media_sequence)
+        segments = self.segments[start_index:] + self.segments[:start_index]
+        for s in segments:
             playlist += "#EXTINF:{},\n".format(s.duration)
             playlist += "{}\n".format(s.location)
             if s.discontinuity:
