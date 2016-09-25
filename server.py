@@ -4,11 +4,14 @@ import http.server
 import socketserver
 import os
 import socket
+import time
 import re
 import argparse
 import vod_master_playlist as mp
 
 global master_playlist
+global start_time
+global is_vod
 
 class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
@@ -82,7 +85,9 @@ def generate_variant_playlist(variant_index):
     if master_playlist is None:
         raise Exception("Master playlist has not been initialized")
     f = open("index-{}.m3u8".format(variant_index), 'w')
-    f.write(master_playlist.variants[variant_index].serialize())
+    if not is_vod:
+        time_offset = int(time.time()) - start_time
+    f.write(master_playlist.variants[variant_index].serialize(is_vod, 3, time_offset))
     f.close()
 
 def get_ip_address():
@@ -92,16 +97,29 @@ def get_ip_address():
 
 def main():
     # Parse the arguments
-    parser = argparse.ArgumentParser()
+    help_text = """
+    Start HLS streaming server with existing hls vod files
+    You can serve either single VOD file, or concatenat several VOD files and serve them (They must be with same
+    encoding parameters to be concatenated)
+    You can also start live streaming by looping existing vod file(s) with -l or --loop
+    """
+    parser = argparse.ArgumentParser(description=help_text)
     parser.add_argument('playlists', metavar='playlists', type=str, nargs='+',
-            help='List of source playlists to serve from')
+            help="List of source playlists to serve from, orders or playlists will be following during serving")
     parser.add_argument('-p', '--port', nargs='?', type=int, default=8000,
             help="Port to serve from, default 8000")
+    parser.add_argument('-l', '--loop', dest='loop', action='store_true',
+            help="Serve in loop mode (live streaming)")
     args = parser.parse_args()
     source_playlists = args.playlists
     port = args.port
+    global is_vod
+    is_vod = (not args.loop)
     # Prepare master playlist
     generate_master_playlist(source_playlists)
+    # Start timecode
+    global start_time
+    start_time = int(time.time())
     # Start webserver
     Handler = CustomHTTPRequestHandler
     httpd = socketserver.TCPServer(("", port), Handler)
