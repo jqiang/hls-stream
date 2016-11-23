@@ -85,6 +85,7 @@ def generate_variant_playlist(variant_index):
     if master_playlist is None:
         raise Exception("Master playlist has not been initialized")
     f = open("index-{}.m3u8".format(variant_index), 'w')
+    time_offset = 0
     if not is_vod:
         time_offset = int(time.time()) - start_time
     f.write(master_playlist.variants[variant_index].serialize(is_vod, 3, time_offset))
